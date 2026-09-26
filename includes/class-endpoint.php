@@ -23,6 +23,15 @@ class Simple_MCP_Endpoint {
             }
             nocache_headers();
             header('X-Robots-Tag: noindex, nofollow');
+            // Клієнт відкриває SSE-канал (Streamable HTTP). Ми його не підтримуємо —
+            // за специфікацією MCP це 405. Інакше 200 + закрите з'єднання клієнт сприймає
+            // як обрив і перепідключається в циклі кожні 1–2 с, поки сесія відкрита.
+            $accept = isset($_SERVER['HTTP_ACCEPT']) ? (string) $_SERVER['HTTP_ACCEPT'] : '';
+            if (stripos($accept, 'text/event-stream') !== false) {
+                status_header(405);
+                header('Allow: POST');
+                exit;
+            }
             status_header(200);
             header('Content-Type: text/plain; charset=utf-8');
             echo 'simple-mcp';

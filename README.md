@@ -94,6 +94,8 @@ claude mcp add --transport http simple-mcp https://САЙТ/simple-mcp \
 - Методи: `initialize`, `tools/list`, `tools/call`, `ping`.
 - Автентифікований `GET` на ендпоінт повертає `simple-mcp` для health-check; без валідного
   ключа запит повертається у звичайний WordPress routing (типово це 404).
+- `GET` з `Accept: text/event-stream` (клієнт відкриває SSE-канал) отримує `405` —
+  SSE не підтримується, і за специфікацією MCP клієнт після цього не перепідключається.
 
 ## Інструменти
 

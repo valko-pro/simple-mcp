@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) exit;
 
 class Simple_MCP_GitHub_Updater {
 
-    private const REPOSITORY = 'olegvalko-dev/simple-mcp';
+    private const REPOSITORY = 'valko-pro/simple-mcp';
     private const CACHE_KEY  = 'simple_mcp_github_update_data';
     private const CACHE_TTL  = 12 * HOUR_IN_SECONDS;
 

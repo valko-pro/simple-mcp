@@ -36,7 +36,7 @@ class Simple_MCP_Tools_Content {
                 'callback' => [__CLASS__, 'render_post'],
             ],
             'safe_delete' => [
-                'description' => 'Translation-aware delete. If the post has linked translations (wp-loc/WPML), it refuses unless allow_cascade:true, and even then deletes ONLY this post (siblings are left intact, never cascaded). force:true bypasses trash. Prevents the "deleted a source and lost all its translations" class of mistakes.',
+                'description' => 'Translation-aware delete. If the post has linked translations (wp-loc/WPML), it refuses unless allow_cascade:true, and even then deletes ONLY this post (siblings are left intact, never cascaded). Without force the post goes to the trash for every post type, and the call fails instead of deleting when the trash cannot be used. force:true bypasses trash. Prevents the "deleted a source and lost all its translations" class of mistakes.',
                 'inputSchema' => ['type' => 'object', 'additionalProperties' => false,
                     'properties' => [
                         'post_id'       => ['type' => 'integer'],
@@ -135,8 +135,22 @@ class Simple_MCP_Tools_Content {
         }
 
         $force = !empty($args['force']);
-        $r = wp_delete_post($id, $force);
-        if (!$r) return self::err('delete failed');
-        return self::ok(['deleted' => $id, 'trashed' => !$force, 'siblings_left' => $siblings ?: (object) []]);
+        if ($force) {
+            $r = wp_delete_post($id, true);
+            if (!$r) return self::err('delete failed');
+            return self::ok(['deleted' => $id, 'trashed' => false, 'siblings_left' => $siblings ?: (object) []]);
+        }
+
+        // Not wp_delete_post($id, false): it only trashes posts and pages and silently
+        // deletes every other post type for good, and it empties an already trashed post.
+        if ($post->post_status === 'trash') {
+            return self::err('Post ' . $id . ' is already in the trash. Re-call with force:true to delete it permanently.');
+        }
+        if (!EMPTY_TRASH_DAYS) {
+            return self::err('Trash is disabled on this site (EMPTY_TRASH_DAYS). Re-call with force:true to delete post ' . $id . ' permanently.');
+        }
+        $r = wp_trash_post($id);
+        if (!$r) return self::err('trash failed');
+        return self::ok(['deleted' => $id, 'trashed' => true, 'siblings_left' => $siblings ?: (object) []]);
     }
 }

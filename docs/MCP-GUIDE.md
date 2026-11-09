@@ -170,7 +170,9 @@ wploc_link_translation {source_id, target_id, lang}→ link two existing posts a
 
 ### Delete safely
 `safe_delete {post_id}` — refuses if translations exist (lists them); pass `allow_cascade:true`
-to delete **only** that post (siblings are never cascaded). Prefer trashing (omit `force`).
+to delete **only** that post (siblings are never cascaded). Prefer trashing (omit `force`):
+it works for every post type, and the call fails if the post is already in the trash or the
+trash is disabled.
 
 ### WooCommerce product data (optional `wp-loc-woocommerce` addon)
 ```
